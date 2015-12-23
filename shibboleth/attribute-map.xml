@@ -1,66 +1,141 @@
 
-<SPConfig xmlns="urn:mace:shibboleth:2.0:native:sp:config"
-    xmlns:conf="urn:mace:shibboleth:2.0:native:sp:config"
-    xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
-    xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"    
-    xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
-    clockSkew="180">
+<Attributes xmlns="urn:mace:shibboleth:2.0:attribute-map"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-    <!-- The ApplicationDefaults element is where most of Shibboleth's SAML bits are defined. -->
-    <ApplicationDefaults entityID="http://urldoservico.dominio.usp.br/"
-                         REMOTE_USER="uid eppn persistent-id targeted-id">
+    <Attribute name="urn:mace:dir:attribute-def:eduPersonPrincipalName" id="eppn">
+        <AttributeDecoder xsi:type="ScopedAttributeDecoder"/>
+    </Attribute>
+    <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.1.1.6" id="eppn">
+        <AttributeDecoder xsi:type="ScopedAttributeDecoder"/>
+    </Attribute>
 
-        <Sessions lifetime="28800" timeout="3600" relayState="ss:mem"
-                  checkAddress="false" handlerSSL="false" cookieProps="http">
+    <!-- Unique ID -->
+    <Attribute name="urn:mace:switch.ch:attribute-def:swissEduPersonUniqueID" id="uniqueID"/>
+    <Attribute name="urn:oid:2.16.756.1.2.5.1.1.1" id="uniqueID"/>
 
-            <SSO entityID="https://idpcafe.usp.br/idp/shibboleth">
-              SAML2 SAML1
-            </SSO>
 
-            <!-- SAML and local-only logout. -->
-            <Logout>SAML2 Local</Logout>
-            
-            <!-- Extension service that generates "approximate" metadata based on SP configuration. -->
-            <Handler type="MetadataGenerator" Location="/Metadata" signing="false"/>
+    <!-- First, the deprecated version, decoded as a scoped string: -->
+    <Attribute name="urn:mace:dir:attribute-def:eduPersonTargetedID" id="targeted-id">
+    <!--    <AttributeDecoder xsi:type="ScopedAttributeDecoder"/> -->
+         <AttributeDecoder xsi:type="NameIDFromScopedAttributeDecoder" formatter="$NameQualifier!$SPNameQualifier!$Name" defaultQualifiers="true"/> 
+        <!-- <AttributeDecoder xsi:type="NameIDFromScopedAttributeDecoder" formatter="$NameQualifier!$SPNameQualifier!$Name" defaultQualifiers="true"/> -->
+    </Attribute>
 
-            <!-- Status reporting service. -->
-            <Handler type="Status" Location="/Status" acl="127.0.0.1 ::1"/>
+    <!-- Third, the new version (note the OID-style name): -->
+    <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.1.1.10" id="persistent-id">
+        <AttributeDecoder xsi:type="NameIDAttributeDecoder" formatter="$NameQualifier!$SPNameQualifier!$Name" defaultQualifiers="true"/>
+    </Attribute>
 
-            <!-- Session diagnostic service. -->
-            <Handler type="Session" Location="/Session" showAttributeValues="false"/>
+    <!-- Fourth, the SAML 2.0 NameID Format: -->
+    <Attribute name="urn:oasis:names:tc:SAML:2.0:nameid-format:persistent" id="persistent-id">
+        <AttributeDecoder xsi:type="NameIDAttributeDecoder" formatter="$NameQualifier!$SPNameQualifier!$Name" defaultQualifiers="true"/>
+    </Attribute>
 
-            <!-- JSON feed of discovery information. -->
-            <Handler type="DiscoveryFeed" Location="/DiscoFeed"/>
-        </Sessions>
+    <!-- Surname -->
+    <Attribute name="urn:mace:dir:attribute-def:sn" id="surname"/>
+    <Attribute name="urn:oid:2.5.4.4" id="surname"/>
 
-        <Errors supportContact="nuvem@usp.br"
-            helpLocation="/about.html"
-            styleSheet="/shibboleth-sp/main.css"/>
-        
-        <!-- Example of remotely supplied batch of signed metadata. -->
-	<MetadataProvider type="XML"
-              uri="https://idpcafe.usp.br/idp/shibboleth"
-              backingFilePath="idp-nuvem-metadata.xml" reloadInterval="180000">
-	</MetadataProvider>
+    <!-- Given name -->
+    <Attribute name="urn:mace:dir:attribute-def:givenName" id="givenName"/>
+    <Attribute name="urn:oid:2.5.4.42" id="givenName"/>
 
-        <!-- Map to extract attributes from SAML assertions. -->
-        <AttributeExtractor type="XML" validate="true" reloadChanges="false" path="attribute-map.xml"/>
-        
-        <!-- Use a SAML query if no attributes are supplied during SSO. -->
-        <AttributeResolver type="Query" subjectMatch="true"/>
+    <!-- E-mail address -->
+    <Attribute name="urn:mace:dir:attribute-def:mail" id="mail"/>
+    <Attribute name="urn:oid:0.9.2342.19200300.100.1.3" id="mail"/>
 
-        <!-- Default filtering policy for recognized attributes, lets other data pass. -->
-        <AttributeFilter type="XML" validate="true" path="attribute-policy.xml"/>
+    <!-- Home organization -->
+    <Attribute name="urn:mace:switch.ch:attribute-def:swissEduPersonHomeOrganization" id="homeOrganization"/>
+    <Attribute name="urn:oid:2.16.756.1.2.5.1.1.4" id="homeOrganization"/>
 
-        <!-- Simple file-based resolver for using a single keypair. -->
-        <CredentialResolver type="File" key="sp-key.pem" certificate="sp-cert.pem"/>
+    <!-- Home organization type -->
+    <Attribute name="urn:mace:switch.ch:attribute-def:swissEduPersonHomeOrganizationType" id="homeOrganizationType">
+        <AttributeDecoder xsi:type="StringAttributeDecoder" caseSensitive="false"/>
+    </Attribute>
+    <Attribute name="urn:oid:2.16.756.1.2.5.1.1.5" id="homeOrganizationType">
+        <AttributeDecoder xsi:type="StringAttributeDecoder" caseSensitive="false"/>
+    </Attribute>
 
-    </ApplicationDefaults>
+    <Attribute name="urn:mace:dir:attribute-def:eduPersonAffiliation" id="affiliation"/>
+    <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.1.1.1" id="affiliation"/>
+
+    <!-- Other attributes -->
+
+    <!-- User ID -->
+    <Attribute name="urn:mace:dir:attribute-def:uid" id="uid"/>
+    <Attribute name="urn:oid:0.9.2342.19200300.100.1.1" id="uid"/>
+
+    <!-- Nick name -->
+    <Attribute name="urn:mace:dir:attribute-def:eduPersonNickname" id="nickname"/>
+    <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.1.1.2" id="nickname"/>
+
+    <!-- Preferred Language -->
+    <Attribute name="urn:mace:dir:attribute-def:preferredLanguage" id="preferredLanguage"/>
+    <Attribute name="urn:oid:2.16.840.1.113730.3.1.39" id="preferredLanguage"/>
+
+
+    <Attribute name="urn:mace:dir:attribute-def:eduPersonScopedAffiliation" id="scoped-affiliation">
+        <AttributeDecoder xsi:type="ScopedAttributeDecoder" caseSensitive="false"/>
+    </Attribute>
+    <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.1.1.9" id="scoped-affiliation">
+        <AttributeDecoder xsi:type="ScopedAttributeDecoder" caseSensitive="false"/>
+    </Attribute>
+
+    <!-- Organization path -->
+    <Attribute name="urn:mace:dir:attribute-def:eduPersonOrgDN" id="org-dn"/>
+    <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.1.1.3" id="org-dn"/>
+
+    <!-- Organizational unit path -->
+    <Attribute name="urn:mace:dir:attribute-def:eduPersonOrgUnitDN" id="orgunit-dn"/>
+    <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.1.1.4" id="orgunit-dn"/>
+
+    <!-- Primary organizational unit -->
+    <Attribute name="urn:mace:dir:attribute-def:eduPersonPrimaryOrgUnitDN" id="primary-orgunit-dn"/>
+    <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.1.1.8" id="primary-orgunit-dn"/>
+
+    <!-- Entitlement -->
+    <Attribute name="urn:mace:dir:attribute-def:eduPersonEntitlement" id="entitlement"/>
+    <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.1.1.7" id="entitlement"/>
+
+
+    <!-- Other Standardized/International attributes -->
+
+    <!-- Organizational unit -->
+    <Attribute name="urn:mace:dir:attribute-def:ou" id="ou"/>
+    <Attribute name="urn:oid:2.5.4.11" id="ou"/>
+
+    <!-- Member of -->
+    <Attribute name="urn:mace:dir:attribute-def:isMemberOf" id="isMemberOf"/>
+    <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.5.1.1" id="isMemberOf"/>
+
+    <!-- Display Name -->
+    <Attribute name="urn:mace:dir:attribute-def:displayName" id="displayName"/>
+    <Attribute name="urn:oid:2.16.840.1.113730.3.1.241" id="displayName"/>
+
+    <!-- Common Name -->
+    <Attribute name="urn:mace:dir:attribute-def:cn" id="cn"/>
+    <Attribute name="urn:oid:2.5.4.3" id="cn"/>
+
+    <!-- eduPerson Unique ID -->
+    <Attribute name="urn:mace:dir:attribute-def:eduPersonUniqueId" id="Shib-EP-UniqueID" aliases="eduPersonUniqueId"/>
+    <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.1.1.13" id="Shib-EP-UniqueID" aliases="eduPersonUniqueId"/>
+
+
+    <!-- Principal name -->
     
-    <!-- Policies that determine how to process and authenticate runtime messages. -->
-    <SecurityPolicyProvider type="XML" validate="true" path="security-policy.xml"/>
+    <Attribute name="urn:mace:dir:attribute-def:eduPersonPrincipalName" id="principalName">
+         <AttributeDecoder xsi:type="ScopedAttributeDecoder" caseSensitive="false"/>
+    </Attribute>
+    <Attribute name="urn:oid:1.3.6.1.4.1.5923.1.1.1.6" id="principalName">
+         <AttributeDecoder xsi:type="ScopedAttributeDecoder" caseSensitive="false"/>
+    </Attribute>
+    
 
-    <!-- Low-level configuration about protocols and bindings available for use. -->
-    <ProtocolProvider type="XML" validate="true" reloadChanges="false" path="protocols.xml"/>
-
-</SPConfig>
+    <!-- Schema: brEduPerson -->
+    <!-- brEduAffiliationType -->
+    <Attribute name="urn:mace:rnp.br:attribute-def:brEduAffiliationType"
+               id="Shib-brEduPerson-brEduAffiliationType"/>
+    <Attribute name="urn:oid:1.3.6.1.4.1.15996.100.1.1.2.1"
+               id="Shib-brEduPerson-brEduAffiliationType"/>
+ 
+ 
+</Attributes>
