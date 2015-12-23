@@ -7,7 +7,6 @@ $Self->{'AuthModule'} = 'Kernel::System::Auth::HTTPBasicAuth';
 $Self->{'Customer::AuthModule'} = 'Kernel::System::CustomerAuth::HTTPBasicAuthShib';
 
 # Uncomment to override the environment vars to be used
-$Self->{'Customer::AuthModule::HTTPBasicAuthShib::UsernameEnvVar'} = 'eppn';
 $Self->{'Customer::AuthModule::HTTPBasicAuthShib::MailEnvVar'} = 'mail';
 $Self->{'Customer::AuthModule::HTTPBasicAuthShib::FirstNameEnvVar'} = 'givenName';
 $Self->{'Customer::AuthModule::HTTPBasicAuthShib::LastNameEnvVar'} = 'surname';
